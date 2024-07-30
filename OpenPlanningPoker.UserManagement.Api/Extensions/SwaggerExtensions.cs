@@ -1,9 +1,6 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Models;
+﻿namespace OpenPlanningPoker.UserManagement.Api.Extensions;
 
-namespace OpenPlanningPoker.UserManagement.Api.Extensions;
-
-public static class ServiceCollectionExtensions
+public static class SwaggerExtensions
 {
     public static IServiceCollection AddSwagger(this IServiceCollection services)
     {
