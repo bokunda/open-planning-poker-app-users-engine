@@ -3,10 +3,9 @@
 public static class KeyCloakExtensions
 {
     private const string AdminSection = "KeycloakAdmin";
-    private const string AdminClient = "admin";
     private const string ProtectionClient = "protection";
 
-    public static IServiceCollection AddKeyCloak(this IServiceCollection services, IConfigurationManager configuration)
+    public static void AddKeyCloak(this IServiceCollection services, IConfigurationManager configuration)
     {
         services.AddKeycloakWebApiAuthentication(configuration);
 
@@ -15,33 +14,16 @@ public static class KeyCloakExtensions
             .AddKeycloakAuthorization(configuration)
             .AddAuthorizationServer(configuration);
 
-        var options = configuration.GetKeycloakOptions<KeycloakAdminClientOptions>(configSectionName: AdminSection)!;
-        services
-            .AddClientCredentialsTokenManagement()
-            .AddClient(
-                AdminSection,
-                client =>
-                {
-                    client.ClientId = options.Resource;
-                    client.ClientSecret = options.Credentials.Secret;
-                    client.TokenEndpoint = options.KeycloakTokenEndpoint;
-                }
-            );
-
         services
             .AddKeycloakAdminHttpClient(configuration, keycloakClientSectionName: AdminSection)
             .AddClientCredentialsTokenHandler(AdminSection);
 
-        services.AddAccessTokenManagement(
-            configuration
-        );
-
-        return services;
+        services.AddAccessTokenManagement(configuration);
     }
 
-    public static IServiceCollection AddAccessTokenManagement(this IServiceCollection services, IConfigurationManager configuration)
+    private static void AddAccessTokenManagement(this IServiceCollection services, IConfigurationManager configuration)
     {
-        var adminClientOptions = configuration.GetKeycloakOptions<KeycloakAdminClientOptions>(AdminSection)!;
+        var adminClientOptions = configuration.GetKeycloakOptions<KeycloakAdminClientOptions>(configSectionName: AdminSection)!;
         var protectionClientOptions = configuration.GetKeycloakOptions<KeycloakProtectionClientOptions>()!;
 
         services.AddSingleton(adminClientOptions);
@@ -51,7 +33,7 @@ public static class KeyCloakExtensions
         services
             .AddClientCredentialsTokenManagement()
             .AddClient(
-                AdminClient,
+                AdminSection,
                 client =>
                 {
                     client.ClientId = adminClientOptions.Resource;
@@ -68,7 +50,5 @@ public static class KeyCloakExtensions
                     client.TokenEndpoint = protectionClientOptions.KeycloakTokenEndpoint;
                 }
             );
-
-        return services;
     }
 }
